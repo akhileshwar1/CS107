@@ -14,7 +14,8 @@ imdb::imdb(const string& directory)
 {
   const string actorFileName = directory + "/" + kActorFileName;
   const string movieFileName = directory + "/" + kMovieFileName;
-  
+ 
+  cout << actorFileName << " " << movieFileName << endl;
   actorFile = acquireFileMap(actorFileName, actorInfo);
   movieFile = acquireFileMap(movieFileName, movieInfo);
 }
@@ -28,30 +29,62 @@ bool imdb::good() const
 // you should be implementing these two methods right here... 
 bool imdb::getCredits(const string& player, vector<film>& films) const {
   // get the integer offset located at the actor file's first actor.
+  int nActors =  *(int *)actorFile;
+  cout << "nactors are " << nActors << endl;
   int n = 0;
-  memcpy(&n, (char *)actorFile + 8, sizeof(int));
+  memcpy(&n, (char *)actorFile, sizeof(int));
   cout << "n is " << n << endl;
-  char *offset = (char *)actorFile + 16;
-  int *intOffset = (int *)offset;
-  cout << *intOffset << " " << sizeof(char) << endl;
+  int *offset = (int *)actorFile + 7;
+  int intOffset;
+  memcpy(&intOffset, offset, sizeof(int));
+  cout << intOffset << " " << endl;
 
-  int length = 0;
-  char *actorOffset = (char *)actorFile + *intOffset;
+  char *actorOffset = (char *)actorFile + intOffset;
   char *it = actorOffset;
+  int length = (int) strlen(it);
   while(*it != '\0'){
     cout << *it;
-    ++it;
-    ++length;
+    it++;
   }
+
+  // padded with an extra \0.
+  if(length%2 == 0){
+    cout << "in here " << endl;
+    ++it;
+  }
+
+  cout << "length is" << length << endl;
 
   short movies;
   memcpy(&movies, ++it, sizeof(short));
-  cout << "no of movies are" << movies << endl;
+  cout << "no of movies are " << movies << endl;
+  it = it + 2; // go to the first byte following the short.
 
+  size_t len = it - (char *)actorFile - 1; 
+  cout << "length with no of movies is" << len << " " << len%4 << endl;
+  // padded with two extra zeroes if the length till now was not a multiple of 4.
+  if(len%4 != 0){
+    it = it + 2;
+  }
+
+  int movieOffset = *(int *)it;
+  cout << "movie offset is " << movieOffset << endl;
+
+  int tMovies = *(int *)movieFile;
+  cout << "movies are" << tMovies << endl;
+
+  // let's get the movie title.
+  char *movieTitle = (char *)movieFile + movieOffset;
+  int titleLength = 0;
+  while(*movieTitle != '\0'){
+    cout << *movieTitle;
+    ++movieTitle;
+    ++titleLength;
+  }
 
   return false;
 }
-
+ 
 bool imdb::getCast(const film& movie, vector<string>& players) const { return false; }
 
 imdb::~imdb()
