@@ -26,6 +26,30 @@ bool imdb::good() const
 	    (movieInfo.fd == -1) ); 
 }
 
+int imdb::getActorOffset(const string& player) const {
+  const char *cplayer = player.c_str();
+  int nActors =  *(int *)actorFile;
+  int *left = (int *)actorFile + 1;
+  int *right = (int *)actorFile + nActors;
+  while (left <= right) {
+    ptrdiff_t diff = right - left;
+    int *mid = left + (diff/2);
+    int cmp = strcmp(cplayer, (char *)actorFile + *mid);
+    if(cmp == 0) {
+      return *mid;
+    }
+    else if (cmp < 0) {
+      right = mid - 1;
+    }
+    else if (cmp > 0) {
+      left = mid + 1;
+    }
+  }
+
+  // player not found.
+  return -1;
+}
+
 // you should be implementing these two methods right here... 
 bool imdb::getCredits(const string& player, vector<film>& films) const {
   // get the integer offset located at the actor file's first actor.
@@ -34,7 +58,7 @@ bool imdb::getCredits(const string& player, vector<film>& films) const {
   int n = 0;
   memcpy(&n, (char *)actorFile, sizeof(int));
   cout << "n is " << n << endl;
-  int *offset = (int *)actorFile + 7;
+  int *offset = (int *)actorFile + 2;
   int intOffset;
   memcpy(&intOffset, offset, sizeof(int));
   cout << intOffset << " " << endl;

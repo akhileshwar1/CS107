@@ -38,6 +38,12 @@ class imdb {
   bool good() const;
 
   /**
+   * Uses binary search to find the offset to given actor's name.
+   * @param: a c++ string containing the player name.
+   */
+  int getActorOffset(const string& player) const;
+
+  /**
    * Method: getCredits
    * ------------------
    * Searches for an actor/actress's list of movie credits.  The list 
