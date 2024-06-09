@@ -5,6 +5,7 @@ using namespace std;
 #include <fcntl.h>
 #include <unistd.h>
 #include <cstring>
+#include <vector>
 #include "imdb.h"
 
 const char *const imdb::kActorFileName = "actordata";
@@ -54,59 +55,45 @@ int imdb::getActorOffset(const string& player) const {
 bool imdb::getCredits(const string& player, vector<film>& films) const {
   // get the integer offset located at the actor file's first actor.
   int nActors =  *(int *)actorFile;
-  cout << "nactors are " << nActors << endl;
-  int n = 0;
-  memcpy(&n, (char *)actorFile, sizeof(int));
-  cout << "n is " << n << endl;
-  int *offset = (int *)actorFile + 2;
-  int intOffset;
-  memcpy(&intOffset, offset, sizeof(int));
-  cout << intOffset << " " << endl;
+  int actorOffset = getActorOffset(player);
 
-  char *actorOffset = (char *)actorFile + intOffset;
-  char *it = actorOffset;
-  int length = (int) strlen(it);
-  while(*it != '\0'){
-    cout << *it;
-    it++;
+  if (actorOffset == -1) {
+    return false;
   }
 
-  // padded with an extra \0.
-  if(length%2 == 0){
-    cout << "in here " << endl;
-    ++it;
+  char *it = (char *)actorFile + actorOffset;
+  int length = strlen(it);
+  it = it + length; // points to the null character at the end of string.
+
+  if(length%2 == 0) {
+    ++it; //padded with an extra null character.
   }
 
-  cout << "length is" << length << endl;
+  short movies = *(short *)++it;
 
-  short movies;
-  memcpy(&movies, ++it, sizeof(short));
-  cout << "no of movies are " << movies << endl;
   it = it + 2; // go to the first byte following the short.
-
-  size_t len = it - (char *)actorFile - 1; 
-  cout << "length with no of movies is" << len << " " << len%4 << endl;
+  size_t len = it - (char *)actorFile - 1;
   // padded with two extra zeroes if the length till now was not a multiple of 4.
   if(len%4 != 0){
     it = it + 2;
   }
 
-  int movieOffset = *(int *)it;
-  cout << "movie offset is " << movieOffset << endl;
-
-  int tMovies = *(int *)movieFile;
-  cout << "movies are" << tMovies << endl;
-
-  // let's get the movie title.
-  char *movieTitle = (char *)movieFile + movieOffset;
-  int titleLength = 0;
-  while(*movieTitle != '\0'){
-    cout << *movieTitle;
-    ++movieTitle;
-    ++titleLength;
+  for (int i = 0; i< movies; i++) {
+    int offset = *(int *)it;
+    struct film f;
+    char *movie = (char *)movieFile + offset;
+    char *title;
+    strcpy(title, movie);
+    f.title = title;
+    movie = movie + strlen(title);
+    ++movie; // to the year.
+    f.year = 1900 + (int)*movie;
+    films.push_back(f);
   }
 
-  return false;
+  cout << "films size is " << films.size() <<  " " << films[0].year << endl;
+
+  return true;
 }
  
 bool imdb::getCast(const film& movie, vector<string>& players) const { return false; }
