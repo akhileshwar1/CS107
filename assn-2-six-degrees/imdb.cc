@@ -87,6 +87,7 @@ bool imdb::getCredits(const string& player, vector<film>& films) const {
     f.title = title;
     f.year = 1900 + (int)*(++movie + strlen(title));
     films.push_back(f);
+    it = it + 4;
   }
 
   cout << "films size is " << films.size() <<  " " << films[0].year << endl;
@@ -96,7 +97,44 @@ bool imdb::getCredits(const string& player, vector<film>& films) const {
  
 bool imdb::getCast(const film& movie, vector<string>& players) const {
 
-  return false;
+  int movieOffset = bsearch(movie.title, movieFile);
+  if (movieOffset == -1) {
+    return false;
+  }
+
+  cout << "movie offset is " << movieOffset << endl;
+  int length = movie.title.length();
+  char *movieRecord = (char *)movieFile + movieOffset;
+  char *it = movieRecord;
+  it = it + length + 1;
+
+  if ((length + 2) % 2 != 0) {
+    ++it; // padded with an extra 0 to make it even.
+  }
+
+  short actors = *(short *)++it;
+  ++it; // to end of short;
+
+  size_t diff = it - movieRecord;
+  if (diff % 4 != 0) {
+    it = it + 3;
+  }
+
+  for(int i = 0; i< actors; i++) {
+    int offset = *(int *)it;
+    char *actor; 
+    strcpy(actor, (char *)actorFile + offset);
+    string player = actor;
+    players.push_back(player);
+    it = it + 4;
+  }
+
+  cout << "player size is " << players.size() << endl;
+  for (int i = 0; i< players.size(); i++) {
+    cout << "player is " << players[i] << endl;
+  }
+
+  return true;
 }
 
 imdb::~imdb()
