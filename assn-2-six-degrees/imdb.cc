@@ -27,15 +27,15 @@ bool imdb::good() const
 	    (movieInfo.fd == -1) ); 
 }
 
-int imdb::getActorOffset(const string& player) const {
+int bsearch(const string& player, const void *File) {
   const char *cplayer = player.c_str();
-  int nActors =  *(int *)actorFile;
-  int *left = (int *)actorFile + 1;
-  int *right = (int *)actorFile + nActors;
+  int nActors =  *(int *)File;
+  int *left = (int *)File + 1;
+  int *right = (int *)File + nActors;
   while (left <= right) {
     ptrdiff_t diff = right - left;
     int *mid = left + (diff/2);
-    int cmp = strcmp(cplayer, (char *)actorFile + *mid);
+    int cmp = strcmp(cplayer, (char *)File + *mid);
     if(cmp == 0) {
       return *mid;
     }
@@ -55,7 +55,7 @@ int imdb::getActorOffset(const string& player) const {
 bool imdb::getCredits(const string& player, vector<film>& films) const {
   // get the integer offset located at the actor file's first actor.
   int nActors =  *(int *)actorFile;
-  int actorOffset = getActorOffset(player);
+  int actorOffset = bsearch(player, actorFile);
 
   if (actorOffset == -1) {
     return false;
@@ -85,9 +85,7 @@ bool imdb::getCredits(const string& player, vector<film>& films) const {
     char *title;
     strcpy(title, movie);
     f.title = title;
-    movie = movie + strlen(title);
-    ++movie; // to the year.
-    f.year = 1900 + (int)*movie;
+    f.year = 1900 + (int)*(++movie + strlen(title));
     films.push_back(f);
   }
 
@@ -96,7 +94,10 @@ bool imdb::getCredits(const string& player, vector<film>& films) const {
   return true;
 }
  
-bool imdb::getCast(const film& movie, vector<string>& players) const { return false; }
+bool imdb::getCast(const film& movie, vector<string>& players) const {
+
+  return false;
+}
 
 imdb::~imdb()
 {
