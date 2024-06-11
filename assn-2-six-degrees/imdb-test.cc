@@ -3,6 +3,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 #include "imdb.h"
 using namespace std;
 
@@ -158,7 +159,6 @@ static void listAllMoviesAndCostars(const string& player,
     cout << "Perhaps someone else?" << endl;
     return;
   }
-  
   listMovies(player, credits);
   listCostars(player, credits, db);
 }
@@ -200,7 +200,7 @@ static void queryForActors(const imdb& db)
 
 int main(int argc, char **argv)
 {
-  imdb db(determinePathToData());
+  imdb db("/media/akhilkandi/DATA/Code/cs107/assn-2-six-degrees-data/little-endian/");
   if (!db.good()) { cerr << "Data directory not found!  Aborting..." << endl; return 1; }
   queryForActors(db);
   return 0;

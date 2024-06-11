@@ -57,6 +57,7 @@ bool imdb::getCredits(const string& player, vector<film>& films) const {
   int nActors =  *(int *)actorFile;
   int actorOffset = bsearch(player, actorFile);
 
+  cout << "inside credits " << actorOffset << endl;
   if (actorOffset == -1) {
     return false;
   }
@@ -70,9 +71,11 @@ bool imdb::getCredits(const string& player, vector<film>& films) const {
   }
 
   short movies = *(short *)++it;
+  cout << "no of movies are " << movies << endl;
 
   it = it + 2; // go to the first byte following the short.
-  size_t len = it - (char *)actorFile - 1;
+  size_t len = it - (char *)actorFile; 
+  len = (len - actorOffset);
   // padded with two extra zeroes if the length till now was not a multiple of 4.
   if(len%4 != 0){
     it = it + 2;
@@ -82,10 +85,9 @@ bool imdb::getCredits(const string& player, vector<film>& films) const {
     int offset = *(int *)it;
     struct film f;
     char *movie = (char *)movieFile + offset;
-    char *title;
-    strcpy(title, movie);
+    string title(movie);
     f.title = title;
-    f.year = 1900 + (int)*(++movie + strlen(title));
+    f.year = 1900 + (int)*(movie + title.length() + 1);
     films.push_back(f);
     it = it + 4;
   }
@@ -106,7 +108,7 @@ bool imdb::getCast(const film& movie, vector<string>& players) const {
   int length = movie.title.length();
   char *movieRecord = (char *)movieFile + movieOffset;
   char *it = movieRecord;
-  it = it + length + 1;
+  it = it + length + 1; // points to the year.
 
   if ((length + 2) % 2 != 0) {
     ++it; // padded with an extra 0 to make it even.
@@ -115,22 +117,26 @@ bool imdb::getCast(const film& movie, vector<string>& players) const {
   short actors = *(short *)++it;
   ++it; // to end of short;
 
-  size_t diff = it - movieRecord;
+  // all the bytes till now should be a multiple of 4. This is to ensure it.
+  size_t diff = it - (char *)movieFile;
+  diff = (diff - movieOffset) + 1;
   if (diff % 4 != 0) {
     it = it + 3;
+  }
+  else {
+    ++it;
   }
 
   for(int i = 0; i< actors; i++) {
     int offset = *(int *)it;
-    char *actor; 
-    strcpy(actor, (char *)actorFile + offset);
-    string player = actor;
+    char *actor = (char *)actorFile + offset;
+    string player(actor);
     players.push_back(player);
     it = it + 4;
   }
 
   cout << "player size is " << players.size() << endl;
-  for (int i = 0; i< players.size(); i++) {
+  for (size_t i = 0; i< players.size(); i++) {
     cout << "player is " << players[i] << endl;
   }
 
@@ -147,6 +153,7 @@ imdb::~imdb()
 // an array of bytes in RAM.. 
 const void *imdb::acquireFileMap(const string& fileName, struct fileInfo& info)
 {
+  cout << "in opening file" << endl;
   struct stat stats;
   stat(fileName.c_str(), &stats);
   info.fileSize = stats.st_size;
