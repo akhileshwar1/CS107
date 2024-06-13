@@ -1,6 +1,7 @@
 #include <vector>
 #include <list>
 #include <set>
+#include <queue>
 #include <string>
 #include <iostream>
 #include <iomanip>
@@ -38,6 +39,44 @@ static string promptForActor(const string& prompt, const imdb& db)
 }
 
 /**
+ * Generates the shortest path between two actors.
+ * @param source the name of the first actor.
+ * @param target the name of the second actor.
+ * @return path containing the movie/actor pairs between the two actos.
+ */
+path generateShortestPath(const imdb& db, const string& source, const string& target) {
+  queue<path> q;
+  path p(source);
+  q.push(p);
+
+  while (!q.empty()) {
+    path p = q.front();
+    q.pop();
+    vector<film> credits;
+    db.getCredits(p.getLastPlayer(), credits);
+    for (film& f : credits) {
+      vector<string> actors;
+      db.getCast(f, actors);
+
+      for(string& actor : actors) {
+        if (actor == target) {
+          p.addConnection(f, actor);
+          return p;
+        } else {
+          path newPath = p;
+          newPath.addConnection(f, actor);
+          q.push(newPath);
+        }
+      }
+    }
+
+  }
+
+  return p; // no path found.
+
+}
+
+/**
  * Serves as the main entry point for the six-degrees executable.
  * There are no parameters to speak of.
  *
@@ -54,7 +93,7 @@ static string promptForActor(const string& prompt, const imdb& db)
 
 int main(int argc, const char *argv[])
 {
-  imdb db(determinePathToData(argv[1])); // inlined in imdb-utils.h
+  imdb db("/media/akhilkandi/DATA/Code/cs107/assn-2-six-degrees-data/little-endian/"); // inlined in imdb-utils.h
   if (!db.good()) {
     cout << "Failed to properly initialize the imdb database." << endl;
     cout << "Please check to make sure the source files exist and that you have permission to read them." << endl;
@@ -69,8 +108,13 @@ int main(int argc, const char *argv[])
     if (source == target) {
       cout << "Good one.  This is only interesting if you specify two different people." << endl;
     } else {
-      // replace the following line by a call to your generateShortestPath routine... 
-      cout << endl << "No path between those two people could be found." << endl << endl;
+      path p = generateShortestPath(db, source, target);
+      if(p.getLength() == 0) { 
+        cout << endl << "No path between those two people could be found." << endl << endl;
+      } else {
+        cout << p << endl;
+      }
+
     }
   }
   

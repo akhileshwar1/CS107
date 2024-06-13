@@ -13,7 +13,7 @@ int main() {
   struct film f;
   f.title = "Tapeheads";
   f.year = 88;
-  db.getCast(f, players);
+  //db.getCast(f, players);
   cout << "film count is " << credits.size() << endl;
   for(film f : credits) {
     cout << f.title << endl;

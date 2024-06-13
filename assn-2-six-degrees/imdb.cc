@@ -57,7 +57,6 @@ bool imdb::getCredits(const string& player, vector<film>& films) const {
   int nActors =  *(int *)actorFile;
   int actorOffset = bsearch(player, actorFile);
 
-  cout << "inside credits " << actorOffset << endl;
   if (actorOffset == -1) {
     return false;
   }
@@ -71,7 +70,6 @@ bool imdb::getCredits(const string& player, vector<film>& films) const {
   }
 
   short movies = *(short *)++it;
-  cout << "no of movies are " << movies << endl;
 
   it = it + 2; // go to the first byte following the short.
   size_t len = it - (char *)actorFile; 
@@ -92,8 +90,6 @@ bool imdb::getCredits(const string& player, vector<film>& films) const {
     it = it + 4;
   }
 
-  cout << "films size is " << films.size() <<  " " << films[0].year << endl;
-
   return true;
 }
  
@@ -104,7 +100,6 @@ bool imdb::getCast(const film& movie, vector<string>& players) const {
     return false;
   }
 
-  cout << "movie offset is " << movieOffset << endl;
   int length = movie.title.length();
   char *movieRecord = (char *)movieFile + movieOffset;
   char *it = movieRecord;
@@ -135,11 +130,6 @@ bool imdb::getCast(const film& movie, vector<string>& players) const {
     it = it + 4;
   }
 
-  cout << "player size is " << players.size() << endl;
-  for (size_t i = 0; i< players.size(); i++) {
-    cout << "player is " << players[i] << endl;
-  }
-
   return true;
 }
 
@@ -153,7 +143,6 @@ imdb::~imdb()
 // an array of bytes in RAM.. 
 const void *imdb::acquireFileMap(const string& fileName, struct fileInfo& info)
 {
-  cout << "in opening file" << endl;
   struct stat stats;
   stat(fileName.c_str(), &stats);
   info.fileSize = stats.st_size;
