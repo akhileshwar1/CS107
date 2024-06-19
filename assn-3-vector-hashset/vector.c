@@ -14,7 +14,18 @@ void VectorNew(vector *v, int elemSize, VectorFreeFunction freeFn, int initialAl
 }
 
 void VectorDispose(vector *v)
-{}
+{
+  if (v->freeFn != NULL) {
+    for (int i = 0; i < v->allocatedLength; i++) {
+      void *elemAddr = (char *)v->elems + i*v->elemSize;
+      v->freeFn(elemAddr);
+    }
+  }
+
+  // embedded memory pointers freed, now we can free the actual elems memory.
+  free(v->elems);
+  v->elems = NULL;
+}
 
 int VectorLength(const vector *v)
 { return 0; }
