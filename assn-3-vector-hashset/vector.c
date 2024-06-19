@@ -28,10 +28,17 @@ void VectorDispose(vector *v)
 }
 
 int VectorLength(const vector *v)
-{ return 0; }
+{
+  return v->logLength;
+}
 
 void *VectorNth(const vector *v, int position)
-{ return NULL; }
+{
+  assert(position>=0 && position<v->logLength);
+
+  void *ptr = (char *)v->elems + position*v->elemSize;
+  return ptr;
+}
 
 void VectorReplace(vector *v, const void *elemAddr, int position)
 {}
@@ -40,7 +47,17 @@ void VectorInsert(vector *v, const void *elemAddr, int position)
 {}
 
 void VectorAppend(vector *v, const void *elemAddr)
-{}
+{
+  if (v->logLength == v->allocatedLength) {
+    // resize it to double of the previous size.
+    v->elems = realloc(v->elems, 2*v->allocatedLength*v->elemSize);
+    v->allocatedLength = 2*v->allocatedLength;
+  }
+
+  // all clear.
+  memcpy((char *)v->elems + v->logLength*v->elemSize, elemAddr, v->elemSize);  
+  v->logLength++;
+}
 
 void VectorDelete(vector *v, int position)
 {}
