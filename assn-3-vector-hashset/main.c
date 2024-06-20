@@ -1,5 +1,18 @@
 #include "vector.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// helpful comparator fn for descending order on ints.
+int compare(const void *a, const void *b) {
+    return *(int *)a - *(int *)b;
+}
+
+void inc(void *elemAddr, void *auxData) {
+  int a = *(int *)elemAddr + 1;
+  memcpy(elemAddr, &a, sizeof(int));
+}
+
 
 int main() {
   printf("in main\n");
@@ -36,7 +49,20 @@ int main() {
   // delete at last position.
   VectorDelete(&vec, 3);
   nth_ptr = VectorNth(&vec, 3);
-  printf("new vector value at the 3th position is %d\n", *nth_ptr);
+  printf("new vector value at the 3rd position is %d\n", *nth_ptr);
+
+  // sort the array.
+  VectorCompareFunction comparator = compare;
+  VectorSort(&vec, comparator);
+  nth_ptr = VectorNth(&vec, 2);
+  printf("new vector value at the 2nd position is %d\n", *nth_ptr);
+
+  // use the inc map function to increment the ints of vector.
+  VectorMapFunction map = inc;
+  VectorMap(&vec, map, NULL);
+  nth_ptr = VectorNth(&vec, 4);
+  printf("new vector value at the 4th position is %d\n", *nth_ptr);
+
 
   VectorDispose(&vec);
   if (vec.elems == NULL) printf("vector is null\n");

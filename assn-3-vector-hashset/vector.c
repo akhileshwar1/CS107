@@ -98,11 +98,35 @@ void VectorDelete(vector *v, int position)
 }
 
 void VectorSort(vector *v, VectorCompareFunction compare)
-{}
+{
+  assert(compare != NULL);
+  qsort(v->elems, v->allocatedLength, v->elemSize, compare);
+}
 
 void VectorMap(vector *v, VectorMapFunction mapFn, void *auxData)
-{}
+{
+  assert(mapFn != NULL);
+  for (int i = 0; i< v->allocatedLength; i++) {
+    mapFn((char *)v->elems + i*v->elemSize, auxData);
+  }
+}
 
 static const int kNotFound = -1;
 int VectorSearch(const vector *v, const void *key, VectorCompareFunction searchFn, int startIndex, bool isSorted)
-{ return -1; } 
+{
+  assert(key != NULL && searchFn != NULL);
+  void *ptr;
+  if (isSorted) {
+    ptr = bsearch(key, (char *)v->elems + startIndex*v->elemSize, v->allocatedLength, 
+                        v->elemSize, searchFn);
+    
+  } else {
+    ptr = bsearch(key, (char *)v->elems + startIndex*v->elemSize, v->allocatedLength, 
+                        v->elemSize, searchFn);
+  }
+  if (ptr == NULL) {
+    return -1;
+  } else {
+    return (ptr - v->elems)/v->elemSize;
+  }
+}
