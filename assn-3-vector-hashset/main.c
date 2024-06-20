@@ -21,6 +21,12 @@ int main() {
   int *ptr_end = VectorNth(&vec, 4);
   printf("vector value at the 4th position is %d\n", *ptr_end);
   printf("resized vector length is %d\n", VectorLength(&vec));
+
+  // replace the vector at 4th position with 11.
+  int elem = 11;
+  VectorReplace(&vec, &elem, 4);
+  int *nth_ptr = VectorNth(&vec, 4);
+  printf("new vector value at the 4th position is %d\n", *nth_ptr);
   VectorDispose(&vec);
   if (vec.elems == NULL) printf("vector is null\n");
 }
