@@ -27,6 +27,17 @@ int main() {
   VectorReplace(&vec, &elem, 4);
   int *nth_ptr = VectorNth(&vec, 4);
   printf("new vector value at the 4th position is %d\n", *nth_ptr);
+
+  // insert at capacity, should resize the vector.
+  VectorInsert(&vec, &elem, 4);
+  nth_ptr = VectorNth(&vec, 5);
+  printf("new vector value at the 5th position is %d\n", *nth_ptr);
+
+  // delete at last position.
+  VectorDelete(&vec, 3);
+  nth_ptr = VectorNth(&vec, 3);
+  printf("new vector value at the 3th position is %d\n", *nth_ptr);
+
   VectorDispose(&vec);
   if (vec.elems == NULL) printf("vector is null\n");
 }

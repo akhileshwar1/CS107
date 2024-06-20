@@ -53,7 +53,21 @@ void VectorReplace(vector *v, const void *elemAddr, int position)
 }
 
 void VectorInsert(vector *v, const void *elemAddr, int position)
-{}
+{
+  assert(position>=0 && position<=v->logLength);
+  if (v->logLength == v->allocatedLength) {
+    // resize it to double of the previous size.
+    v->elems = realloc(v->elems, 2*v->allocatedLength*v->elemSize);
+    v->allocatedLength = 2*v->allocatedLength;
+  }
+
+  void *src = (char *)v->elems + position*v->elemSize;
+  void *dest = (char *)v->elems + (position+1)*v->elemSize;
+  memmove(dest, src, (void *)((char *)v->elems + v->allocatedLength*v->elemSize) - src);
+  memcpy(src, elemAddr, v->elemSize);
+  v->logLength++;
+
+}
 
 void VectorAppend(vector *v, const void *elemAddr)
 {
@@ -69,7 +83,19 @@ void VectorAppend(vector *v, const void *elemAddr)
 }
 
 void VectorDelete(vector *v, int position)
-{}
+{
+  assert(position>=0 && position<=v->logLength);
+  if (v->freeFn != NULL) {
+    void *ptr = (char *)v->elems + position*v->elemSize;
+    v->freeFn(ptr);
+  }
+
+  void *dest = (char *)v->elems + position*v->elemSize;
+  void *src = (char *)v->elems + (position+1)*v->elemSize;
+  // there is an overlap in source and dest memory area, but not concerning while copying elems.
+  memcpy(dest, src, (void *)((char *)v->elems + v->allocatedLength*v->elemSize) - src);
+  v->logLength--;
+}
 
 void VectorSort(vector *v, VectorCompareFunction compare)
 {}
