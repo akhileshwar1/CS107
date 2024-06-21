@@ -16,7 +16,7 @@ void VectorNew(vector *v, int elemSize, VectorFreeFunction freeFn, int initialAl
 void VectorDispose(vector *v)
 {
   if (v->freeFn != NULL) {
-    for (int i = 0; i < v->allocatedLength; i++) {
+    for (int i = 0; i < v->logLength; i++) {
       void *elemAddr = (char *)v->elems + i*v->elemSize;
       v->freeFn(elemAddr);
     }
@@ -63,7 +63,7 @@ void VectorInsert(vector *v, const void *elemAddr, int position)
 
   void *src = (char *)v->elems + position*v->elemSize;
   void *dest = (char *)v->elems + (position+1)*v->elemSize;
-  memmove(dest, src, (void *)((char *)v->elems + v->allocatedLength*v->elemSize) - src);
+  memmove(dest, src, (void *)((char *)v->elems + v->logLength*v->elemSize) - src);
   memcpy(src, elemAddr, v->elemSize);
   v->logLength++;
 
@@ -100,13 +100,13 @@ void VectorDelete(vector *v, int position)
 void VectorSort(vector *v, VectorCompareFunction compare)
 {
   assert(compare != NULL);
-  qsort(v->elems, v->allocatedLength, v->elemSize, compare);
+  qsort(v->elems, v->logLength, v->elemSize, compare);
 }
 
 void VectorMap(vector *v, VectorMapFunction mapFn, void *auxData)
 {
   assert(mapFn != NULL);
-  for (int i = 0; i< v->allocatedLength; i++) {
+  for (int i = 0; i< v->logLength; i++) {
     mapFn((char *)v->elems + i*v->elemSize, auxData);
   }
 }
