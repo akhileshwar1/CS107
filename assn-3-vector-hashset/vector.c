@@ -6,6 +6,9 @@
 
 void VectorNew(vector *v, int elemSize, VectorFreeFunction freeFn, int initialAllocation)
 {
+  assert(initialAllocation >= 0);
+  initialAllocation = initialAllocation == 0? 4 : initialAllocation;
+  printf("allocated length is %d\n", initialAllocation);
   v->allocatedLength = initialAllocation;
   v->elemSize = elemSize;
   v->logLength = 0;
@@ -73,6 +76,7 @@ void VectorAppend(vector *v, const void *elemAddr)
 {
   if (v->logLength == v->allocatedLength) {
     // resize it to double of the previous size.
+    printf("reallocing %d %d\n", v->allocatedLength*v->elemSize, 2*v->allocatedLength*v->elemSize);
     v->elems = realloc(v->elems, 2*v->allocatedLength*v->elemSize);
     v->allocatedLength = 2*v->allocatedLength;
   }
@@ -111,6 +115,17 @@ void VectorMap(vector *v, VectorMapFunction mapFn, void *auxData)
   }
 }
 
+void *lsearch(const void *key, const void *base, size_t nitems, size_t size, 
+              int (*compar)(const void *, const void *)) {
+    for (size_t i = 0; i < nitems; i++) {
+        void *elem = (char *)base + i * size;
+        if (compar(key, elem) == 0) {
+            return elem;
+        }
+    }
+    return NULL;
+}
+
 static const int kNotFound = -1;
 int VectorSearch(const vector *v, const void *key, VectorCompareFunction searchFn, int startIndex, bool isSorted)
 {
@@ -121,12 +136,12 @@ int VectorSearch(const vector *v, const void *key, VectorCompareFunction searchF
                         v->elemSize, searchFn);
     
   } else {
-    ptr = bsearch(key, (char *)v->elems + startIndex*v->elemSize, v->allocatedLength, 
+    ptr = lsearch(key, (char *)v->elems + startIndex*v->elemSize, v->allocatedLength, 
                         v->elemSize, searchFn);
   }
   if (ptr == NULL) {
     return -1;
   } else {
-    return (ptr - v->elems)/v->elemSize;
+    return ((char *)ptr - (char *)v->elems)/v->elemSize;
   }
 }
