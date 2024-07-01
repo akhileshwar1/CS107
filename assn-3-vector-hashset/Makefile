@@ -41,7 +41,7 @@ vector-test : Makefile.dependencies $(VECTOR_TEST_OBJS)
 	$(CC) -o $@ $(VECTOR_TEST_OBJS) $(LDFLAGS)
 
 hashset-test : Makefile.dependencies $(HASHSET_TEST_OBJS)
-	$(CC) -o $@ $(HASHSET_TEST_OBJS) $(LDFLAGS)
+	$(CC) -g -o $@ $(HASHSET_TEST_OBJS) $(LDFLAGS)
 
 thesaurus-lookup : Makefile.dependencies $(THESAURUS_LOOKUP_OBJS)
 	$(CC) -o $@ $(THESAURUS_LOOKUP_OBJS) $(LDFLAGS)

@@ -19,7 +19,6 @@ using namespace std;
  * which takes a word from cin and stores it as
  * a buffer.
  */
-
 Bcstream::Bcstream()
 {
 

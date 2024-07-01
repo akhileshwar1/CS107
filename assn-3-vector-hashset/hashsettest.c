@@ -148,17 +148,17 @@ static void TestHashTable(void)
   
   fprintf(stdout, "Here is the unordered contents of the table:\n");
   HashSetMap(&counts, PrintFrequency, stdout);  // print contents of table
-  
+
   VectorNew(&sortedCounts, sizeof(struct frequency), NULL, 0);
   HashSetMap(&counts, AddFrequency, &sortedCounts);   // add all freq to array
   VectorSort(&sortedCounts, CompareLetter);      // sort by char
   fprintf(stdout, "\nHere are the trials sorted by char: \n");
   VectorMap(&sortedCounts, PrintFrequency, stdout);
-  
+
   VectorSort(&sortedCounts, CompareOccurrences); //sort by occurrences
   fprintf(stdout, "\nHere are the trials sorted by occurrence & char: \n");
   VectorMap(&sortedCounts, PrintFrequency, stdout);	// print out array 
-  
+
   VectorDispose(&sortedCounts);				// free all storage 
   HashSetDispose(&counts);
 }

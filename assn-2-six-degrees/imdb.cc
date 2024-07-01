@@ -94,7 +94,6 @@ bool imdb::getCredits(const string& player, vector<film>& films) const {
 }
  
 bool imdb::getCast(const film& movie, vector<string>& players) const {
-
   int movieOffset = bsearch(movie.title, movieFile);
   if (movieOffset == -1) {
     return false;

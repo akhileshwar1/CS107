@@ -121,4 +121,3 @@ int main(int argc, const char *argv[])
   cout << "Thanks for playing!" << endl;
   return 0;
 }
-
