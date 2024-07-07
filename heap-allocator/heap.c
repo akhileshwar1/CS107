@@ -6,7 +6,7 @@
 
 void createHeap(heap *h, int size) {
   h->totalBytes = size;
-  h->freePtr = malloc(size);  // metacircular haha.
+  h->freePtr = malloc(size);  // metacircular.
   
   // create the first block with size as the size of the heap.
   *h->freePtr = NULL;
@@ -27,18 +27,61 @@ void *cmalloc(heap *h, int size) {
   void *it = h->freePtr;
   int availableSpace = *(int *)((char *)it + 8);
   while (availableSpace < size) {
-    it = (char *)it + 8;
-    availableSpace = *(int *)it;
+    if (*(char **)it == NULL) {
+      printf("insufficient memory");
+      return NULL;
+    }
+
+    it = *(char **)it;
+    availableSpace = *(int *)((char *)it + 8);
   }
 
-  // update the free list starting by updating the chosen free block.
-  // current block with remSize => rem block with size => next block. 
+  // detach the new block from the chosen block and update the chosen block with rem size.
   int remSize = availableSpace - size;
-  memcpy(it, &remSize, sizeof(int));
-  char *next = (char *)it + 4 + remSize;
-  memcpy((char *)it + 4 + remSize, (char *)it - 8, sizeof(char *));
-  memcpy((char *)it - 8, &next, sizeof(char *));
-  memcpy((char *)it + 4 + remSize + 8, &size, sizeof(int));
+  memcpy((char *)it + 8 , &remSize, sizeof(int));
 
-  return (char *)it + 4 + remSize + 8 + 4;
+  // initialize the new block.
+  char *newPtr = NULL;
+  memcpy((char *)it + 8 + 4 +remSize, &newPtr, sizeof(char *));
+  memcpy((char *)it + 8 + 4 + remSize + 8, &size, sizeof(int));
+
+  // return the pointer to the data portion of the new block.
+  return (char *)it + 8 + 4 + remSize + 8 + 4;
+}
+
+void cfree(heap *h, void *ptr) {
+  assert(h != NULL && ptr != NULL);
+
+  int size = *(int *)((char *)ptr - 4);
+  ptr = ptr - 4 - 8; // go back to the pointer portion of the block.
+  if (size < 0 || size > h->totalBytes) {
+    printf("invalid pointer");
+  }
+
+  // find the pointers to the right and left of the malloced block. 
+  void *current = h->freePtr;
+  printf("next free ptr is %p\n", *h->freePtr);
+  void *prev;
+  int flag = 0;
+  while (ptr - current > 0) {
+    printf("current is %p\n", *(char **)current);
+    if(*(char **)current == NULL) {
+      flag = 1;
+      break;
+    }
+
+    prev = current;
+    current = *(char **)current;
+  }
+
+  if (flag == 1) {
+    memcpy(current, &ptr, sizeof(char *)); // add to the right of the last free block.
+  } else {
+    // insert the malloced block in between the left and right free blocks.
+    // No need to zero the malloced memory while freeing.
+    memcpy(prev, &ptr, sizeof(char *));
+    memcpy(ptr, &current, sizeof(char *));
+  }
+
+  printf("Block freed: %p\n", ptr);
 }

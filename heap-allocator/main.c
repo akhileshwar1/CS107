@@ -17,4 +17,7 @@ int main() {
   it = cmalloc(&h, 50);
   printf("available bytes are %d\n", *(int *)((char *)it - 4));
 
+  // check the free fn by checking for the bytes available in freed block.
+  cfree(&h, it);
+  printf("freed!, available bytes are %d\n", *(int *)((char *)it - 4));
 }
